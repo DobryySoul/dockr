@@ -23,8 +23,7 @@ func NewDockerClient(ctx context.Context) (*DockerClient, error) {
 	return &DockerClient{Cli: cli}, nil
 }
 
-func (c *DockerClient) FindUnusedImages(ctx context.Context, excludeTags []string) ([]image.Summary, error) {
-
+func (c *DockerClient) FindUnused(ctx context.Context, excludeTags []string) ([]image.Summary, error) {
 	containers, err := c.Cli.ContainerList(context.Background(), container.ListOptions{All: true})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list Docker containers: %w", err)
@@ -47,5 +46,6 @@ func (c *DockerClient) FindUnusedImages(ctx context.Context, excludeTags []strin
 			unusedImages = append(unusedImages, img)
 		}
 	}
+
 	return unusedImages, nil
 }

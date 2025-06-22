@@ -28,3 +28,7 @@ func (r *UnusedResources) ImagesSize() float64 {
 	}
 	return total
 }
+
+func (r *UnusedResources) TotalCount() int {
+	return len(r.Images) + len(r.Containers) + len(r.Volumes)
+}

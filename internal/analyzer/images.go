@@ -1,6 +1,7 @@
 package analyzer
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/docker/docker/api/types/image"
@@ -17,7 +18,8 @@ func IsImageUnused(img image.Summary, excludeTags []string, usedImages map[strin
 
 	for _, tag := range img.RepoTags {
 		for _, excluded := range excludeTags {
-			if strings.HasPrefix(tag, excluded) {
+			fmt.Printf("image tag [%s] - > исключение [%s]", tag, excluded)
+			if strings.Contains(tag, excluded) {
 				return false
 			}
 		}
