@@ -96,7 +96,7 @@ func PrintReport(res *domain.UnusedResources, dryRun bool) {
 	}
 }
 
-func printImagesTable(images []image.Summary) {
+func printImagesTable(images []*image.Summary) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 	fmt.Fprintln(w, "ID\t TAG\t SIZE\t")
 
@@ -115,7 +115,7 @@ func printImagesTable(images []image.Summary) {
 	w.Flush()
 }
 
-func printContainersTable(containers []container.Summary) {
+func printContainersTable(containers []*container.Summary) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 	fmt.Fprintln(w, "ID\t NAME\t СОСТОЯНИЕ\t IMAGE\t")
 

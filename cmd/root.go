@@ -7,10 +7,11 @@ import (
 
 	"github.com/DobryySoul/dockr/internal/cleaner"
 	"github.com/DobryySoul/dockr/internal/docker"
-	"github.com/DobryySoul/dockr/internal/domain"
 	"github.com/DobryySoul/dockr/pkg/formatter"
 	"github.com/spf13/cobra"
 )
+
+const mb = 1024 * 1024
 
 var (
 	dryRun      bool
@@ -28,47 +29,47 @@ var rootCmd = &cobra.Command{
 - Контейнеры (containers)
 - Тома (volumes)
 - Сети (networks)`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
 		if version {
 			fmt.Println("dockr v1.0.0")
-			return
 		}
 
 		dockerClient, err := docker.NewDockerClient(ctx)
 		if err != nil {
-			formatter.Error("Ошибка подключения к Docker: %v", err)
-			return
+			return fmt.Errorf("ошибка подключения к Docker: %w", err)
 		}
 
-		images, err := dockerClient.FindUnused(ctx, excludeTags)
+		resources, err := dockerClient.FindUnusedResourcer(ctx, excludeTags)
 		if err != nil {
-			formatter.Error("Ошибка анализа: %v", err)
-			return
+			return fmt.Errorf("ошибка анализа: %w", err)
 		}
 
-		resources := &domain.UnusedResources{Images: images}
+		if resources.IsEmpty() {
+			formatter.Info("Неиспользуемых ресурсов не найдено.")
+			return nil
+		}
 
 		formatter.PrintReport(resources, dryRun)
 
 		if dryRun {
-			return
+			return nil
 		}
 
 		if interactive && !formatter.Confirm("Продолжить удаление?", resources) {
 			formatter.Info("Операция отменена")
-			return
 		}
 
-		if err := cleaner.Clean(dockerClient, resources.Images, all); err != nil {
-			formatter.Error("Ошибка очистки: %v", err)
-			os.Exit(1)
+		if err := cleaner.CleanAll(ctx, dockerClient, resources, all); err != nil {
+			return fmt.Errorf("ошибка очистки: %w", err)
 		}
 
 		formatter.Success("Очистка завершена! Освобождено: %.2f MB",
-			(*domain.UnusedResources).TotalSize(resources)/1024/1024)
+			float64(resources.TotalSize()/mb))
+
+		return nil
 	},
 }
 

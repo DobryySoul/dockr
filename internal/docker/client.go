@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/DobryySoul/dockr/internal/analyzer"
+	"github.com/DobryySoul/dockr/internal/domain"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
@@ -23,7 +24,36 @@ func NewDockerClient(ctx context.Context) (*DockerClient, error) {
 	return &DockerClient{Cli: cli}, nil
 }
 
-func (c *DockerClient) FindUnused(ctx context.Context, excludeTags []string) ([]image.Summary, error) {
+func (c *DockerClient) FindUnusedResourcer(ctx context.Context, excludeTags []string) (*domain.UnusedResources, error) {
+	images, err := c.FindUnusedImages(ctx, excludeTags)
+	if err != nil {
+		return nil, err
+	}
+
+	// containers, err := c.FindUnusedContainers(ctx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// volumes, err := c.FindUnusedVolumes(ctx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// Поиск сетей - аналогично
+	// networks, err := c.FindUnusedNetworks(ctx) ...
+
+	resources := &domain.UnusedResources{
+		Images: images,
+		// Containers: containers,
+		// Volumes:    volumes,
+		// Networks: networks,
+	}
+
+	return resources, nil
+}
+
+func (c *DockerClient) FindUnusedImages(ctx context.Context, excludeTags []string) ([]*image.Summary, error) {
 	containers, err := c.Cli.ContainerList(context.Background(), container.ListOptions{All: true})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list Docker containers: %w", err)
@@ -39,13 +69,29 @@ func (c *DockerClient) FindUnused(ctx context.Context, excludeTags []string) ([]
 		usedImages[container.ImageID] = true
 	}
 
-	var unusedImages []image.Summary
+	var unusedImages []*image.Summary
 
 	for _, img := range images {
 		if analyzer.IsImageUnused(img, excludeTags, usedImages) {
-			unusedImages = append(unusedImages, img)
+			unusedImages = append(unusedImages, &img)
 		}
 	}
 
 	return unusedImages, nil
+	// (docker image ls -f "dangling=true", фильтрация по excludeTags и т.д.)
+	// возвращает []types.ImageSummary, error
 }
+
+// FindUnusedContainers ищет остановленные контейнеры.
+// func (c *DockerClient) FindUnusedContainers(ctx context.Context) ([]*container.Summary, error) {
+// ... логика для поиска контейнеров
+// (docker ps -a -f "status=exited" -f "status=created")
+// возвращает []types.Container, error
+// }
+
+// FindUnusedVolumes ищет "осиротевшие" тома.
+// func (c *DockerClient) FindUnusedVolumes(ctx context.Context) ([]*volume.Volume, error) {
+// ... логика для поиска томов
+// (docker volume ls -f "dangling=true")
+// возвращает []*types.Volume, error
+// }
