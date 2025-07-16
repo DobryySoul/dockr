@@ -10,6 +10,7 @@ import (
 	"github.com/DobryySoul/dockr/internal/domain"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/volume"
 
 	"github.com/fatih/color"
 )
@@ -80,9 +81,9 @@ func PrintReport(res *domain.UnusedResources, dryRun bool) {
 		printContainersTable(res.Containers)
 	})
 
-	// printSection("Тома", len(res.Volumes), func() {
-	// 	printVolumesTable(res.Volumes)
-	// })
+	printSection("Тома", len(res.Volumes), func() {
+		printVolumesTable(res.Volumes)
+	})
 
 	// printSection("Сети", len(res.Networks), func() {
 	// 	printNetworksTable(res.Networks)
@@ -130,6 +131,26 @@ func printContainersTable(containers []*container.Summary) {
 			truncate(c.Names[0], 20),
 			state,
 			truncate(c.Image, 20),
+		)
+	}
+	w.Flush()
+}
+
+func printVolumesTable(volumes []*volume.Volume) {
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	fmt.Fprintln(w, "DRIVER\t NAME\t STATUS\t SIZE")
+
+	for _, v := range volumes {
+		// state := c.Status
+		// if c.Status ==  {
+		// 	state = color.HiRedString(state)
+		// }
+
+		fmt.Fprintf(w, "%s\t %s\t %s\t \n",
+			truncateID(v.Driver),
+			truncate(v.Name, 20),
+			// state,
+			truncate(fmt.Sprintf("%d", v.UsageData.Size), 20),
 		)
 	}
 	w.Flush()

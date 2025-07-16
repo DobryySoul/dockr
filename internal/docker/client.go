@@ -8,6 +8,7 @@ import (
 	"github.com/DobryySoul/dockr/internal/domain"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 )
 
@@ -35,10 +36,10 @@ func (c *DockerClient) FindUnusedResourcer(ctx context.Context, excludeTags []st
 	// 	return nil, err
 	// }
 
-	// volumes, err := c.FindUnusedVolumes(ctx)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	volumes, err := c.FindUnusedVolumes(ctx, false)
+	if err != nil {
+		return nil, err
+	}
 
 	// Поиск сетей - аналогично
 	// networks, err := c.FindUnusedNetworks(ctx) ...
@@ -46,7 +47,7 @@ func (c *DockerClient) FindUnusedResourcer(ctx context.Context, excludeTags []st
 	resources := &domain.UnusedResources{
 		Images: images,
 		// Containers: containers,
-		// Volumes:    volumes,
+		Volumes: volumes,
 		// Networks: networks,
 	}
 
@@ -78,8 +79,6 @@ func (c *DockerClient) FindUnusedImages(ctx context.Context, excludeTags []strin
 	}
 
 	return unusedImages, nil
-	// (docker image ls -f "dangling=true", фильтрация по excludeTags и т.д.)
-	// возвращает []types.ImageSummary, error
 }
 
 // FindUnusedContainers ищет остановленные контейнеры.
@@ -90,8 +89,11 @@ func (c *DockerClient) FindUnusedImages(ctx context.Context, excludeTags []strin
 // }
 
 // FindUnusedVolumes ищет "осиротевшие" тома.
-// func (c *DockerClient) FindUnusedVolumes(ctx context.Context) ([]*volume.Volume, error) {
-// ... логика для поиска томов
-// (docker volume ls -f "dangling=true")
-// возвращает []*types.Volume, error
-// }
+func (c *DockerClient) FindUnusedVolumes(ctx context.Context, force bool) ([]*volume.Volume, error) {
+	volumesList, err := c.Cli.VolumeList(ctx, volume.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list Docker volumes: %w", err)
+	}
+
+	return volumesList.Volumes, nil
+}

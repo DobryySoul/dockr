@@ -11,7 +11,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const mb = 1024 * 1024
+const (
+	mb         = 1024 * 1024
+	versionApp = "dockr version v1.0.0"
+)
 
 var (
 	dryRun      bool
@@ -34,7 +37,7 @@ var rootCmd = &cobra.Command{
 		defer cancel()
 
 		if version {
-			fmt.Println("dockr v1.0.0")
+			fmt.Println(versionApp)
 		}
 
 		dockerClient, err := docker.NewDockerClient(ctx)
@@ -81,9 +84,9 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.Flags().BoolVarP(&version, "version", "v", false, "Просмотр версии")
 	rootCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "Выводит информацию о ресурсах, которые будут удалены")
 	rootCmd.Flags().BoolVarP(&interactive, "interactive", "i", false, "Запрашивает подтверждение перед удалением ресурсов")
 	rootCmd.Flags().StringSliceVarP(&excludeTags, "exclude-tags", "e", []string{}, "Список тегов образов, которые нужно исключить при удалении")
 	rootCmd.Flags().BoolVarP(&all, "all", "a", false, "Удалять ВСЕ неиспользуемые ресурсы (включая важные)")
-	rootCmd.Flags().BoolVarP(&version, "version", "v", false, "Просмотр версии")
 }
