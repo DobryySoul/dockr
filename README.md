@@ -1,77 +1,85 @@
 # Dockr 🐳
 
-**Dockr** — это умная CLI-утилита для безопасной очистки и удаления неиспользуемых Docker-ресурсов (образов, контейнеров, томов и сетей). Инструмент написан на Go и предоставляет удобный интерфейс командной строки для поддержания чистоты на вашем хосте.
+**Dockr** is a smart CLI utility for safely cleaning up unused Docker resources (images, containers, volumes, and networks). The tool is written in Go and provides a user-friendly command-line interface to keep your host machine clean.
 
-## Особенности
+## Features
 
-- **Умный анализ**: Находит "осиротевшие" образы, остановленные контейнеры и неиспользуемые тома.
-- **Безопасное удаление**: Поддерживает интерактивный режим (`-i`) с запросом подтверждения перед очисткой.
-- **Исключения**: Возможность защитить определенные образы от удаления по их тегам (`-e`).
-- **Dry-Run (тестовый прогон)**: Позволяет посмотреть отчет о том, что будет удалено, без фактического изменения системы (`-d`).
-- **Информативность**: Цветной и структурированный вывод в виде таблиц с подсчетом освобожденного места на диске.
+- **Smart Analysis**: Finds orphaned images, exited containers, and unused volumes/networks.
+- **Safe Deletion**: Supports interactive mode (`-i`) to prompt for confirmation before cleaning up.
+- **Exceptions**: Ability to protect specific images from deletion by their tags (`-e`).
+- **Dry-Run Mode**: Allows you to view a report of what would be deleted without actually making changes to the system (`-d`).
+- **Informative**: Colored and structured table output with a calculation of freed disk space.
 
-## Установка
+## Installation
 
-Вы можете собрать проект самостоятельно, имея установленный Go:
+**Linux / macOS (Quick Install):**
+```bash
+curl -sSfL https://raw.githubusercontent.com/DobryySoul/dockr/main/scripts/install.sh | bash
+```
+
+**Using Go:**
+```bash
+go install github.com/DobryySoul/dockr@latest
+```
+
+Alternatively, you can build the project yourself if you have Go installed:
 
 ```bash
-# Клонировать репозиторий
+# Clone the repository
 git clone https://github.com/DobryySoul/dockr.git
 cd dockr
 
-# Сборка проекта
+# Build the project
 go build -o dockr main.go
-
-# (Опционально) Использование скрипта установки
-bash scripts/install.sh
 ```
 
-## Использование
+## Usage
 
-Просто запустите утилиту из командной строки:
+Simply run the utility from the command line:
 
 ```bash
-dockr [флаги]
+dockr [flags]
 ```
 
-### Доступные флаги:
-- `-d, --dry-run` — Режим симуляции: выводит информацию о ресурсах, которые могут быть удалены, без их фактического удаления.
-- `-i, --interactive` — Интерактивный режим: запрашивает подтверждение пользователя перед удалением ресурсов.
-- `-e, --exclude-tags` — Исключить определенные теги образов из удаления (можно указывать несколько раз, например: `-e latest -e prod`).
-- `-a, --all` — Удалять ВСЕ неиспользуемые ресурсы (включая важные).
-- `-v, --version` — Показать текущую версию приложения.
+### Available Flags:
+- `-d, --dry-run` — Simulation mode: prints information about resources that would be deleted, without actually removing them.
+- `-i, --interactive` — Interactive mode: asks for user confirmation before deleting resources.
+- `-e, --exclude-tags` — Exclude specific image tags from deletion (can be specified multiple times, e.g., `-e latest -e prod`).
+- `-a, --all` — Delete ALL unused resources (including potentially important ones).
+- `-v, --version` — Show the current application version.
 
-## Тестирование
+## Testing
 
-Проект покрыт юнит-тестами для проверки корректности бизнес-логики (правила определения "неиспользуемости" ресурсов). Чтобы запустить тесты, выполните команду:
+The project is covered by unit tests to verify the correctness of the business logic (rules for determining if resources are "unused"). To run the tests, execute the following command:
 
 ```bash
 go test -v ./...
 ```
 
-## Структура проекта
+## Project Structure
 
-Кодовая база построена с учетом принципов чистой архитектуры и стандартных конвенций Go-проектов. Назначение основных директорий:
+The codebase is built with clean architecture principles and standard Go project conventions in mind. Purpose of main directories:
 
 ```text
 .
-├── cmd/                # Команды CLI (на базе Cobra). Инициализация и настройка флагов
-│   └── root.go         # Корневая команда 'dockr'
-├── internal/           # Внутренняя бизнес-логика приложения (недоступна для импорта извне)
-│   ├── analyzer/       # Логика анализа: определение, используется ли ресурс или его можно удалить
-│   ├── cleaner/        # Методы для фактического удаления объектов из Docker
-│   ├── docker/         # Обертка над Docker SDK, методы для взаимодействия с Docker Daemon
-│   └── domain/         # Основные структуры данных и модели (например, UnusedResources)
-├── pkg/                # Публичные пакеты (потенциально переиспользуемые)
-│   └── formatter/      # Утилиты для форматирования вывода (таблицы, цветной текст, расчеты)
-├── scripts/            # Вспомогательные bash-скрипты (например, install.sh)
-├── Makefile            # Команды автоматизации (сборка, тесты, линтеры и т.д.)
-└── main.go             # Точка входа в приложение
+├── cmd/                # CLI commands (based on Cobra). Initialization and flag setup
+│   └── root.go         # Root command 'dockr'
+├── internal/           # Internal application business logic (cannot be imported externally)
+│   ├── analyzer/       # Analysis logic: determining if a resource is used or can be deleted
+│   ├── cleaner/        # Methods for actually deleting objects from Docker
+│   ├── docker/         # Docker SDK wrapper, methods for interacting with Docker Daemon
+│   └── domain/         # Core data structures and models (e.g., UnusedResources)
+├── pkg/                # Public packages (potentially reusable)
+│   └── formatter/      # Output formatting utilities (tables, colored text, calculations)
+├── scripts/            # Helper bash scripts (e.g., install.sh)
+├── Makefile            # Automation commands (build, test, linters, etc.)
+└── main.go             # Application entry point
 ```
 
-## Зависимости
+## Dependencies
 
-Проект использует надежные open-source решения:
-- [Cobra](https://github.com/spf13/cobra) — фреймворк для создания мощных CLI-приложений.
-- [Docker Engine API / moby](https://github.com/moby/moby) — официальный Go-клиент для взаимодействия с Docker API.
-- [fatih/color](https://github.com/fatih/color) — удобный пакет для форматирования и вывода цветного текста в консоль.
+The project relies on reliable open-source solutions:
+- [Cobra](https://github.com/spf13/cobra) — A framework for creating powerful CLI applications.
+- [Docker Engine API / moby](https://github.com/moby/moby) — The official Go client for interacting with the Docker API.
+- [fatih/color](https://github.com/fatih/color) — A handy package for formatting and printing colored text to the console.
+

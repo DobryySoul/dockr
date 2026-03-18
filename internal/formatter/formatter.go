@@ -35,18 +35,18 @@ func Info(format string, a ...any) {
 	InfoColor.Printf("ℹ "+format+"\n", a...)
 }
 
-// Confirm отображает сводку о том, сколько места будет освобождено, и запрашивает
-// у пользователя подтверждение на удаление (y/n). Возвращает true, если пользователь согласился.
+// Confirm displays a summary of how much space will be freed and prompts
+// the user for confirmation to proceed (y/n). Returns true if the user agreed.
 func Confirm(question string, resources *domain.UnusedResources) bool {
-	fmt.Printf("\nБудет удалено:\n")
-	fmt.Printf("- Образы: %d (%.2f MB)\n", len(resources.Images), resources.ImagesSize()/1024/1024)
-	fmt.Printf("- Контейнеры: %d (%.2f MB)\n", len(resources.Containers), resources.ContainersSize()/1024/1024)
-	fmt.Printf("- Тома: %d (%.2f MB)\n", len(resources.Volumes), resources.VolumesSize()/1024/1024)
-	fmt.Printf("- Сети: %d\n", len(resources.Networks))
+	fmt.Printf("\nWill be deleted:\n")
+	fmt.Printf("- Images: %d (%.2f MB)\n", len(resources.Images), resources.ImagesSize()/1024/1024)
+	fmt.Printf("- Containers: %d (%.2f MB)\n", len(resources.Containers), resources.ContainersSize()/1024/1024)
+	fmt.Printf("- Volumes: %d (%.2f MB)\n", len(resources.Volumes), resources.VolumesSize()/1024/1024)
+	fmt.Printf("- Networks: %d\n", len(resources.Networks))
 
 	reader := bufio.NewReader(os.Stdin)
 	for {
-		fmt.Print("\nПродолжить удаление? [y/N]: ")
+		fmt.Print("\nProceed with deletion? [y/N]: ")
 		answer, _ := reader.ReadString('\n')
 		answer = strings.TrimSpace(strings.ToLower(answer))
 
@@ -56,19 +56,19 @@ func Confirm(question string, resources *domain.UnusedResources) bool {
 		case "n", "no", "":
 			return false
 		default:
-			fmt.Println("Пожалуйста, введите 'y' или 'n'")
+			fmt.Println("Please type 'y' or 'n'")
 		}
 	}
 }
 
-// PrintReport выводит детализированный структурированный отчет (в виде таблиц)
-// обо всех найденных неиспользуемых ресурсах. В режиме dryRun печатает предупреждающий заголовок.
+// PrintReport prints a detailed structured report (in tables)
+// of all found unused resources. In dryRun mode, it prints a warning header.
 func PrintReport(res *domain.UnusedResources, dryRun bool) {
 	if dryRun {
 		color.New(color.FgYellow).Println("\n=== DRY RUN MODE ===")
-		color.New(color.FgHiBlue).Println("Будут удалены следующие ресурсы:")
+		color.New(color.FgHiBlue).Println("The following resources will be deleted:")
 	} else {
-		color.New(color.FgYellow).Println("\n=== ОЧИСТКА DOCKER ===")
+		color.New(color.FgYellow).Println("\n=== DOCKER CLEANUP ===")
 	}
 
 	printSection := func(title string, count int, fn func()) {
@@ -78,27 +78,27 @@ func PrintReport(res *domain.UnusedResources, dryRun bool) {
 		}
 	}
 
-	printSection("Образы", len(res.Images), func() {
+	printSection("Images", len(res.Images), func() {
 		printImagesTable(res.Images)
 	})
 
-	printSection("Контейнеры", len(res.Containers), func() {
+	printSection("Containers", len(res.Containers), func() {
 		printContainersTable(res.Containers)
 	})
 
-	printSection("Тома", len(res.Volumes), func() {
+	printSection("Volumes", len(res.Volumes), func() {
 		printVolumesTable(res.Volumes)
 	})
 
-	printSection("Сети", len(res.Networks), func() {
+	printSection("Networks", len(res.Networks), func() {
 		printNetworksTable(res.Networks)
 	})
 
 	if res.TotalCount() > 0 {
-		color.New(color.FgHiWhite).Printf("\nИтого: %d ресурсов, ", res.TotalCount())
-		color.New(color.FgHiGreen).Printf("освободится %.2f MB\n", res.TotalSize()/1024/1024)
+		color.New(color.FgHiWhite).Printf("\nTotal: %d resources, ", res.TotalCount())
+		color.New(color.FgHiGreen).Printf("freed space: %.2f MB\n", res.TotalSize()/1024/1024)
 	} else {
-		color.New(color.FgHiGreen).Println("\nНечего удалять - система чиста!")
+		color.New(color.FgHiGreen).Println("\nNothing to delete - system is clean!")
 	}
 }
 
@@ -123,7 +123,7 @@ func printImagesTable(images []*image.Summary) {
 
 func printContainersTable(containers []*container.Summary) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(w, "ID\t NAME\t СОСТОЯНИЕ\t IMAGE\t SIZE\t")
+	fmt.Fprintln(w, "ID\t NAME\t STATE\t IMAGE\t SIZE\t")
 
 	for _, c := range containers {
 		state := c.State

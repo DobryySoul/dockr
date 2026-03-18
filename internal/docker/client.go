@@ -17,8 +17,8 @@ type DockerClient struct {
 	Cli *client.Client
 }
 
-// NewDockerClient создает новый клиент для взаимодействия с Docker API.
-// Клиент автоматически настраивает версию API для совместимости с хостом.
+// NewDockerClient creates a new client to interact with the Docker API.
+// The client automatically negotiates the API version for compatibility with the host.
 func NewDockerClient(ctx context.Context) (*DockerClient, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -28,8 +28,8 @@ func NewDockerClient(ctx context.Context) (*DockerClient, error) {
 	return &DockerClient{Cli: cli}, nil
 }
 
-// FindUnusedResourcer собирает все неиспользуемые Docker-ресурсы (образы, контейнеры, тома, сети),
-// которые можно безопасно удалить. Возвращает структуру domain.UnusedResources.
+// FindUnusedResourcer collects all unused Docker resources (images, containers, volumes, networks)
+// that can be safely removed. Returns a domain.UnusedResources structure.
 func (c *DockerClient) FindUnusedResourcer(ctx context.Context, excludeTags []string) (*domain.UnusedResources, error) {
 	images, err := c.FindUnusedImages(ctx, excludeTags)
 	if err != nil {
@@ -61,8 +61,8 @@ func (c *DockerClient) FindUnusedResourcer(ctx context.Context, excludeTags []st
 	return resources, nil
 }
 
-// FindUnusedImages ищет неиспользуемые (dangling) образы. Образ считается неиспользуемым,
-// если к нему не привязан ни один контейнер и его тег не находится в списке excludeTags.
+// FindUnusedImages finds unused (dangling) images. An image is considered unused
+// if no container is attached to it and its tag is not in the excludeTags list.
 func (c *DockerClient) FindUnusedImages(ctx context.Context, excludeTags []string) ([]*image.Summary, error) {
 	containers, err := c.Cli.ContainerList(context.Background(), container.ListOptions{All: true})
 	if err != nil {
@@ -90,8 +90,8 @@ func (c *DockerClient) FindUnusedImages(ctx context.Context, excludeTags []strin
 	return unusedImages, nil
 }
 
-// FindUnusedContainers ищет остановленные, созданные или "мертвые" контейнеры, 
-// которые больше не выполняют никакой работы и занимают место на диске.
+// FindUnusedContainers finds stopped, created, or "dead" containers
+// that are no longer performing any work and are just consuming disk space.
 func (c *DockerClient) FindUnusedContainers(ctx context.Context) ([]*container.Summary, error) {
 	containers, err := c.Cli.ContainerList(ctx, container.ListOptions{All: true, Size: true})
 	if err != nil {
@@ -109,7 +109,7 @@ func (c *DockerClient) FindUnusedContainers(ctx context.Context) ([]*container.S
 	return unusedContainers, nil
 }
 
-// FindUnusedNetworks ищет неиспользуемые сети.
+// FindUnusedNetworks finds unused networks.
 func (c *DockerClient) FindUnusedNetworks(ctx context.Context) ([]*network.Summary, error) {
 	networks, err := c.Cli.NetworkList(ctx, network.ListOptions{})
 	if err != nil {
@@ -127,8 +127,8 @@ func (c *DockerClient) FindUnusedNetworks(ctx context.Context) ([]*network.Summa
 	return unusedNetworks, nil
 }
 
-// FindUnusedVolumes ищет "осиротевшие" (dangling) тома.
-// Том считается неиспользуемым, если он не примонтирован ни к одному из существующих контейнеров.
+// FindUnusedVolumes finds "orphaned" (dangling) volumes.
+// A volume is considered unused if it is not mounted to any existing containers.
 func (c *DockerClient) FindUnusedVolumes(ctx context.Context, force bool) ([]*volume.Volume, error) {
 	containers, err := c.Cli.ContainerList(ctx, container.ListOptions{All: true})
 	if err != nil {

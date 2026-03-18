@@ -12,8 +12,8 @@ import (
 	"github.com/docker/docker/api/types/volume"
 )
 
-// CleanAll - основная функция, запускающая процесс удаления всех переданных неиспользуемых ресурсов.
-// Поочередно вызывает методы очистки для образов, контейнеров, томов и сетей.
+// CleanAll is the main function that triggers the deletion process for all provided unused resources.
+// It sequentially calls the cleanup methods for images, containers, volumes, and networks.
 func CleanAll(ctx context.Context, client *docker.DockerClient, resources *domain.UnusedResources, all bool) error {
 	force := true
 
@@ -36,7 +36,7 @@ func CleanAll(ctx context.Context, client *docker.DockerClient, resources *domai
 	return nil
 }
 
-// CleanImages удаляет неиспользуемые ("dangling") образы.
+// CleanImages removes unused (dangling) images.
 func CleanImages(ctx context.Context, client *docker.DockerClient, images []*image.Summary) error {
 	for _, img := range images {
 		_, err := client.Cli.ImageRemove(ctx, img.ID, image.RemoveOptions{})
@@ -50,7 +50,7 @@ func CleanImages(ctx context.Context, client *docker.DockerClient, images []*ima
 	return nil
 }
 
-// CleanContainers удаляет остановленные (или мертвые) контейнеры.
+// CleanContainers removes stopped or dead containers.
 func CleanContainers(ctx context.Context, client *docker.DockerClient, containers []*container.Summary) error {
 	for _, cont := range containers {
 
@@ -64,8 +64,8 @@ func CleanContainers(ctx context.Context, client *docker.DockerClient, container
 	return nil
 }
 
-// CleanNetworks удаляет неиспользуемые сети.
-// Игнорирует системные сети и удаляет только те, которые не привязаны к контейнерам.
+// CleanNetworks removes unused networks.
+// Ignores system networks and deletes only those not attached to any containers.
 func CleanNetworks(ctx context.Context, client *docker.DockerClient, networks []*network.Summary) error {
 	for _, net := range networks {
 		if err := client.Cli.NetworkRemove(ctx, net.ID); err != nil {
@@ -78,8 +78,8 @@ func CleanNetworks(ctx context.Context, client *docker.DockerClient, networks []
 	return nil
 }
 
-// CleanVolumes удаляет "осиротевшие" (неиспользуемые) тома данных.
-// force - принудительное удаление (может потребоваться, если Docker все еще думает, что том занят).
+// CleanVolumes removes orphaned (unused) data volumes.
+// force - forcefully removes the volume (might be needed if Docker still thinks it's busy).
 func CleanVolumes(ctx context.Context, client *docker.DockerClient, volumes []*volume.Volume, force bool) error {
 	for _, v := range volumes {
 		if err := client.Cli.VolumeRemove(ctx, v.Name, force); err != nil {
