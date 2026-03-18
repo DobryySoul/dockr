@@ -26,12 +26,12 @@ var (
 
 var rootCmd = &cobra.Command{
 	Use:   "dockr",
-	Short: "Умный очиститель Docker-ресурсов",
-	Long: `Утилита для безопасного удаления неиспользуемых Docker-ресурсов:
-- Образы (images)
-- Контейнеры (containers)
-- Тома (volumes)
-- Сети (networks)`,
+	Short: "Smart Docker resource cleaner",
+	Long: `Utility for safely removing unused Docker resources:
+- Images
+- Containers
+- Volumes
+- Networks`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
@@ -42,16 +42,16 @@ var rootCmd = &cobra.Command{
 
 		dockerClient, err := docker.NewDockerClient(ctx)
 		if err != nil {
-			return fmt.Errorf("ошибка подключения к Docker: %w", err)
+			return fmt.Errorf("failed to connect to Docker: %w", err)
 		}
 
 		resources, err := dockerClient.FindUnusedResourcer(ctx, excludeTags)
 		if err != nil {
-			return fmt.Errorf("ошибка анализа: %w", err)
+			return fmt.Errorf("analysis error: %w", err)
 		}
 
 		if resources.IsEmpty() {
-			formatter.Info("Неиспользуемых ресурсов не найдено.")
+			formatter.Info("No unused resources found.")
 			return nil
 		}
 
@@ -61,23 +61,23 @@ var rootCmd = &cobra.Command{
 			return nil
 		}
 
-		if interactive && !formatter.Confirm("Продолжить удаление?", resources) {
-			formatter.Info("Операция отменена")
+		if interactive && !formatter.Confirm("Proceed with deletion?", resources) {
+			formatter.Info("Operation cancelled")
 		}
 
 		if err := cleaner.CleanAll(ctx, dockerClient, resources, all); err != nil {
-			return fmt.Errorf("ошибка очистки: %w", err)
+			return fmt.Errorf("cleanup error: %w", err)
 		}
 
-		formatter.Success("Очистка завершена! Освобождено: %.2f MB",
+		formatter.Success("Cleanup completed! Reclaimed: %.2f MB",
 			float64(resources.TotalSize()/mb))
 
 		return nil
 	},
 }
 
-// Execute добавляет все дочерние команды к корневой команде и устанавливает флаги соответствующим образом.
-// Это вызывается из main.main(). Данная функция отвечает только за выполнение корневой команды.
+// Execute adds all child commands to the root command and sets flags appropriately.
+// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -86,9 +86,9 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().BoolVarP(&version, "version", "v", false, "Просмотр версии")
-	rootCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "Выводит информацию о ресурсах, которые будут удалены")
-	rootCmd.Flags().BoolVarP(&interactive, "interactive", "i", false, "Запрашивает подтверждение перед удалением ресурсов")
-	rootCmd.Flags().StringSliceVarP(&excludeTags, "exclude-tags", "e", []string{}, "Список тегов образов, которые нужно исключить при удалении")
-	rootCmd.Flags().BoolVarP(&all, "all", "a", false, "Удалять ВСЕ неиспользуемые ресурсы (включая важные)")
+	rootCmd.Flags().BoolVarP(&version, "version", "v", false, "Show version")
+	rootCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "Simulate deletion without actually removing resources")
+	rootCmd.Flags().BoolVarP(&interactive, "interactive", "i", false, "Prompt for confirmation before removing resources")
+	rootCmd.Flags().StringSliceVarP(&excludeTags, "exclude-tags", "e", []string{}, "List of image tags to exclude from deletion")
+	rootCmd.Flags().BoolVarP(&all, "all", "a", false, "Remove ALL unused resources (including important ones)")
 }
