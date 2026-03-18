@@ -7,7 +7,7 @@ import (
 
 	"github.com/DobryySoul/dockr/internal/cleaner"
 	"github.com/DobryySoul/dockr/internal/docker"
-	"github.com/DobryySoul/dockr/pkg/formatter"
+	"github.com/DobryySoul/dockr/internal/formatter"
 	"github.com/spf13/cobra"
 )
 
@@ -76,6 +76,8 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+// Execute добавляет все дочерние команды к корневой команде и устанавливает флаги соответствующим образом.
+// Это вызывается из main.main(). Данная функция отвечает только за выполнение корневой команды.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
