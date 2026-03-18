@@ -10,4 +10,4 @@ fi
 sudo curl -L https://github.com/yourname/docker-cleaner/releases/latest/download/docker-cleaner-linux-amd64 -o /usr/local/bin/docker-cleaner
 sudo chmod +x /usr/local/bin/docker-cleaner
 
-echo "Установка завершена. Используйте: docker-cleaner --help"
+echo "Установка завершена. Используйте: dockr --help"

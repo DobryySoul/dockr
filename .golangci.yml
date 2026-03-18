@@ -1,0 +1,48 @@
+version: "2"
+
+run:
+  # timeout for analysis, e.g. 30s, 5m, default is 1m
+  timeout: 5m
+
+linters:
+  enable:
+    # Code quality
+    # - gofmt
+    # - goimports
+    # - gosimple
+    - staticcheck
+    - goconst
+    - gocyclo
+    - gocognit
+    - ineffassign
+    - misspell
+    
+    # Error handling
+    - errcheck
+    - errorlint
+    
+    # Security
+    - gosec
+    
+    # Style and conventions
+    - govet
+    # - revive
+    - gocritic
+    - bodyclose
+    - dupl
+    - unconvert
+    
+    # Performance
+    - prealloc
+    
+    # Documentation
+    - godot
+    
+  disable:
+    # - typecheck
+    - lll
+    - wsl
+    - funlen
+    - gochecknoinits
+    - gochecknoglobals
+  
