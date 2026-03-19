@@ -1,4 +1,4 @@
-[![CI & Release](https://github.com/DobryySoul/dockr/actions/workflows/ci.yaml/badge.svg?event=release)](https://github.com/DobryySoul/dockr/actions/workflows/ci.yaml)
+[![CI & Release](https://github.com/DobryySoul/dockr/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/DobryySoul/dockr/actions/workflows/ci.yaml)
 # Dockr 🐳
 
 **Dockr** is a smart CLI utility for safely cleaning up unused Docker resources (images, containers, volumes, and networks). The tool is written in Go and provides a user-friendly command-line interface to keep your host machine clean.
