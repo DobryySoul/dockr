@@ -1,48 +1,77 @@
 version: "2"
 
 run:
-  # timeout for analysis, e.g. 30s, 5m, default is 1m
+  # Timeout for analysis, e.g. 30s, 5m, default is 1m
   timeout: 5m
+  # Exit code when at least one issue was found, default is 1
+  issues-exit-code: 1
+  # Include test files or not, default is true
+  tests: true
+  # Allow multiple parallel golangci-lint instances running.
+  # If false, golangci-lint acquires file lock on start.
+  # Default: false
+  allow-parallel-runners: true
+  # Allow multiple golangci-lint instances running, but serialize them around a lock.
+  # If false, golangci-lint exits with an error if it fails to acquire file lock on start.
+  # Default: false
+  allow-serial-runners: true
+  # Define the Go version limit.
+  # Default: use Go version from the go.mod file, fallback on the env var `GOVERSION`, fallback on 1.22.
+  go: '1.26.1'
+  # Number of operating system threads (`GOMAXPROCS`) that can execute golangci-lint simultaneously.
+  # Default: 0 (automatically set to match Linux container CPU quota and
+  # fall back to the number of logical CPUs in the machine)
+  concurrency: 4
 
 linters:
   enable:
-    # Code quality
-    # - gofmt
-    # - goimports
-    # - gosimple
-    - staticcheck
-    - goconst
-    - gocyclo
-    - gocognit
-    - ineffassign
-    - misspell
-    
-    # Error handling
+    # Default and most important linters
     - errcheck
-    - errorlint
-    
-    # Security
-    - gosec
-    
-    # Style and conventions
     - govet
-    # - revive
-    - gocritic
-    - bodyclose
-    - dupl
-    - unconvert
+    - ineffassign
+    - staticcheck
+    - unused
+
+    # Extra linters for code quality, bugs, and performance
+    - errorlint       # finds code that will cause problems with the error wrapping scheme
+    - gocritic        # provides diagnostics that check for bugs, performance and style issues
+    - gocyclo         # computes and checks the cyclomatic complexity of functions
+    - gosec           # inspects source code for security problems
+    - misspell        # finds commonly misspelled English words
+    - prealloc        # finds slice declarations that could potentially be preallocated
+    - unconvert       # removes unnecessary type conversions
+    - bodyclose       # checks whether HTTP response body is closed successfully
+    - goconst         # finds repeated strings that could be replaced by a constant
+
+  settings:
+    errcheck:
+      # Report about not checking of errors in type assertions: `a := b.(MyStruct)`.
+      check-type-assertions: false
+      # Report about assignment of errors to blank identifier: `num, _ := strconv.Atoi(numStr)`.
+      check-blank: false
     
-    # Performance
-    - prealloc
-    
-    # Documentation
-    - godot
-    
-  disable:
-    # - typecheck
-    - lll
-    - wsl
-    - funlen
-    - gochecknoinits
-    - gochecknoglobals
-  
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment # too strict for general use
+
+    gocyclo:
+      min-complexity: 15
+
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
+      disabled-checks:
+        - unnamedResult
+        - whyNoLint
+        - hugeParam
+        - rangeValCopy
+        - builtinShadow
+
+issues:
+  # Maximum issues count per one linter. Set to 0 to disable. Default is 50.
+  max-issues-per-linter: 0
+  # Maximum count of issues with the same text. Set to 0 to disable. Default is 3.
+  max-same-issues: 0

@@ -1,6 +1,6 @@
 module github.com/DobryySoul/dockr
 
-go 1.24.1
+go 1.26.1
 
 require (
 	github.com/docker/docker v28.2.2+incompatible
