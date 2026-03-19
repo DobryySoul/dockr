@@ -1,3 +1,4 @@
+//nolint:errcheck,gosec // We intentionally ignore error returns from formatting/printing functions
 package formatter
 
 import (

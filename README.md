@@ -48,6 +48,18 @@ dockr [flags]
 - `-a, --all` — Delete ALL unused resources (including potentially important ones).
 - `-v, --version` — Show the current application version.
 
+## Uninstallation
+
+If you used the installation script (`install.sh`), remove the binary:
+```bash
+sudo rm /usr/local/bin/dockr
+```
+
+If you installed it via `go install`, remove it from your Go bin path:
+```bash
+rm $(go env GOPATH)/bin/dockr
+```
+
 ## Testing
 
 The project is covered by unit tests to verify the correctness of the business logic (rules for determining if resources are "unused"). To run the tests, execute the following command:

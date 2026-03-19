@@ -1,4 +1,4 @@
-BINARY=docker-cleaner
+BINARY=dockr
 VERSION=1.0.0
 
 build:
@@ -14,3 +14,6 @@ release:
 
 clean:
 	rm -rf bin/*
+
+lint:
+	golangci-lint run ./... --fix
